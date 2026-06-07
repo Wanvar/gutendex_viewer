@@ -1,50 +1,62 @@
 import 'package:flutter/material.dart';
+import '../models/book_filter.dart';
 
-class BookFilter {
-  final String search;
-  final String? language;
-  final String? subject;
 
-  BookFilter({
-    required this.search,
-    this.language,
-    this.subject,
-  });
+class BookFilterScreen extends StatefulWidget {
+  const BookFilterScreen({super.key});
+
+  @override
+  State<BookFilterScreen> createState() => _BookFilterScreenState();
 }
 
-class BookFilterScreen extends StatelessWidget {
-  BookFilterScreen({super.key});
-
+class _BookFilterScreenState extends State<BookFilterScreen> {
   final TextEditingController searchController = TextEditingController();
 
-  final List<DropdownMenuItem<String?>> languageItems = const [
-    DropdownMenuItem(value: null, child: Text("Dowolny język")),
-    DropdownMenuItem(value: "eng", child: Text("English")),
-    DropdownMenuItem(value: "pol", child: Text("Polski")),
-    DropdownMenuItem(value: "ger", child: Text("Deutsch")),
-    DropdownMenuItem(value: "fre", child: Text("Français")),
-    DropdownMenuItem(value: "spa", child: Text("Español")),
-  ];
 
-  final List<DropdownMenuItem<String?>> subjectItems = const [
+  final List<DropdownMenuItem<String?>> genreItems = const [
     DropdownMenuItem(value: null, child: Text("Dowolny gatunek")),
-    DropdownMenuItem(value: "fantasy", child: Text("Fantasy")),
-    DropdownMenuItem(value: "science_fiction", child: Text("Science Fiction")),
-    DropdownMenuItem(value: "history", child: Text("Historia")),
-    DropdownMenuItem(value: "romance", child: Text("Romans")),
-    DropdownMenuItem(value: "nature", child: Text("Przyroda")),
+    DropdownMenuItem(value: "Powieść", child: Text("Powieść")),
+    DropdownMenuItem(value: "Nowela", child: Text("Nowela")),
+    DropdownMenuItem(value: "Poemat", child: Text("Poemat")),
+    DropdownMenuItem(value: "Wiersz", child: Text("Wiersz")),
+    DropdownMenuItem(value: "Dramat", child: Text("Dramat")),
   ];
 
-  String? _selectedLanguage;
-  String? _selectedSubject;
+
+  final List<DropdownMenuItem<String?>> epochItems = const [
+    DropdownMenuItem(value: null, child: Text("Dowolna epoka")),
+    DropdownMenuItem(value: "Średniowiecze", child: Text("Średniowiecze")),
+    DropdownMenuItem(value: "Oświecenie", child: Text("Oświecenie")),
+    DropdownMenuItem(value: "Romantyzm", child: Text("Romantyzm")),
+    DropdownMenuItem(value: "Pozytywizm", child: Text("Pozytywizm")),
+    DropdownMenuItem(value: "Modernizm", child: Text("Modernizm (Młoda Polska)")),
+  ];
+
+
+  final List<DropdownMenuItem<String?>> kindItems = const [
+    DropdownMenuItem(value: null, child: Text("Dowolny rodzaj")),
+    DropdownMenuItem(value: "Epika", child: Text("Epika")),
+    DropdownMenuItem(value: "Liryka", child: Text("Liryka")),
+    DropdownMenuItem(value: "Dramat", child: Text("Dramat (Rodzaj)")),
+  ];
+
+  String? _selectedGenre;
+  String? _selectedEpoch;
+  String? _selectedKind;
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Filtry książek"),
+        title: const Text("Filtry biblioteki"),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
@@ -52,52 +64,86 @@ class BookFilterScreen extends StatelessWidget {
             TextField(
               controller: searchController,
               decoration: const InputDecoration(
-                labelText: "Szukaj",
+                labelText: "Szukaj po tytule lub autorze",
+                prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
             ),
+            const SizedBox(height: 16),
 
-            const SizedBox(height: 12),
 
             DropdownButtonFormField<String?>(
-              value: _selectedLanguage,
-              items: languageItems,
+              value: _selectedEpoch,
+              items: epochItems,
               decoration: const InputDecoration(
-                labelText: "Język",
+                labelText: "Epoka",
                 border: OutlineInputBorder(),
               ),
               onChanged: (value) {
-                _selectedLanguage = value;
+                setState(() {
+                  _selectedEpoch = value;
+                });
               },
             ),
+            const SizedBox(height: 16),
 
-            const SizedBox(height: 12),
 
             DropdownButtonFormField<String?>(
-              value: _selectedSubject,
-              items: subjectItems,
+              value: _selectedGenre,
+              items: genreItems,
               decoration: const InputDecoration(
                 labelText: "Gatunek",
                 border: OutlineInputBorder(),
               ),
               onChanged: (value) {
-                _selectedSubject = value;
+                setState(() {
+                  _selectedGenre = value;
+                });
               },
             ),
+            const SizedBox(height: 16),
 
-            const SizedBox(height: 20),
 
-            ElevatedButton(
-              onPressed: () {
-                final filter = BookFilter(
-                  search: searchController.text,
-                  language: _selectedLanguage,
-                  subject: _selectedSubject,
-                );
-
-                Navigator.pop(context, filter);
+            DropdownButtonFormField<String?>(
+              value: _selectedKind,
+              items: kindItems,
+              decoration: const InputDecoration(
+                labelText: "Rodzaj",
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _selectedKind = value;
+                });
               },
-              child: const Text("Zastosuj filtry"),
+            ),
+            const SizedBox(height: 24),
+
+
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () {
+                  final filter = BookFilter(
+                    search: searchController.text,
+                    epoch: _selectedEpoch,
+                    genre: _selectedGenre,
+                    kind: _selectedKind,
+                  );
+
+                  Navigator.pop(context, filter);
+                },
+                child: const Text(
+                  "Zastosuj filtry",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ],
         ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/book.dart';
+import '../models/book_info.dart';
 
 class BookListTile extends StatelessWidget {
-  final Book book;
+  final BookInfo book;
   final VoidCallback onTap;
 
   const BookListTile({
@@ -29,29 +29,41 @@ class BookListTile extends StatelessWidget {
                 alignment: Alignment.bottomRight,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    width: 50,
+                    height: 50,
                     decoration: BoxDecoration(
                       color: Colors.indigo.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(
+                    clipBehavior: Clip.antiAlias,
+                    child: book.coverUrl.isNotEmpty
+                        ? Image.network(
+                      book.coverUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.menu_book_rounded,
+                        color: Colors.indigo,
+                        size: 24,
+                      ),
+                    )
+                        : const Icon(
                       Icons.menu_book_rounded,
                       color: Colors.indigo,
-                      size: 26,
+                      size: 24,
                     ),
                   ),
-
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.indigo,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      book.language.toUpperCase(),
+                      book.epoch.toUpperCase(),
+                      maxLines: 1,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 9,
+                        fontSize: 8,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -64,6 +76,7 @@ class BookListTile extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       book.title,
@@ -85,10 +98,24 @@ class BookListTile extends StatelessWidget {
                         color: Colors.grey[600],
                       ),
                     ),
+                    const SizedBox(height: 2),
+
+                    Text(
+                      book.genre,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey[400],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+
+
+              const SizedBox(width: 12),
 
 
               if (book.isMarked)

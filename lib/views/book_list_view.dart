@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:gutendex_viewer/services/sync_service.dart';
 import '../models/book.dart';
+import '../models/book_info.dart';
 import '../services/book_api_service.dart';
 import '../designes/book_list_tile.dart';
 import '../designes/pagination_nav_bar.dart';
 import '../designes/book_filter.dart';
+import '../models/book_filter.dart';
 
 class BookListView extends StatefulWidget {
   const BookListView({super.key});
@@ -16,9 +18,9 @@ class BookListView extends StatefulWidget {
 class _BookListViewState extends State<BookListView> {
 
   final SyncService _syncService = SyncService();
-  late Future<List<Book>> _booksFuture;
+  late Future<List<BookInfo>> _booksFuture;
   bool loaded = false;
-  String _selectedLanguage = "all"; // Domyślny filtr językowy
+
 
   @override
   void initState() {
@@ -67,7 +69,7 @@ class _BookListViewState extends State<BookListView> {
         children: [
 
           Expanded(
-            child: FutureBuilder<List<Book>>(
+            child: FutureBuilder<List<BookInfo>>(
               future: _booksFuture,
               builder: (context, snapshot) {
 
@@ -92,7 +94,7 @@ class _BookListViewState extends State<BookListView> {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     setState(() {});
                   });
-                  final List<Book> books = snapshot.data!;
+                  final List<BookInfo> books = snapshot.data!;
 
                   if (books.isEmpty) {
                     return const Center(child: Text("Brak książek spełniających kryteria."));
@@ -121,7 +123,7 @@ class _BookListViewState extends State<BookListView> {
 
 
 
-                // Stan domyślny (zabezpieczający)
+                // Stan domyślny
                 return const Center(child: Text("Brak danych."));
               },
             ),
