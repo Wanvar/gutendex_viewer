@@ -16,6 +16,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: "demo", home: BookListView());
+    return MaterialApp(title: "Biblioteka Wolne Lektury", home: BookListView());
   }
 }
