@@ -94,9 +94,12 @@ class SyncService {
           book.title.toLowerCase().contains(query) ||
           book.author.toLowerCase().contains(query);
 
-      final matchesEpoch = selectedEpoch == null || book.epoch == selectedEpoch;
-      final matchesGenre = selectedGenre == null || book.genre == selectedGenre;
-      final matchesKind = selectedKind == null || book.kind == selectedKind;
+      final matchesEpoch = selectedEpoch == null ||
+          book.epoch.toLowerCase().contains(selectedEpoch.toLowerCase());
+      final matchesGenre = selectedGenre == null ||
+          book.genre.toLowerCase().contains(selectedGenre.toLowerCase());
+      final matchesKind = selectedKind == null ||
+          book.kind.toLowerCase().contains(selectedKind.toLowerCase());
       final matchesMarked = selectedOnlyMarked  == false || book.isMarked == true;
 
       return matchesSearch && matchesEpoch && matchesGenre && matchesKind && matchesMarked;
