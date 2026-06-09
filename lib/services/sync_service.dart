@@ -1,11 +1,9 @@
 import 'dart:developer';
-import 'dart:math';
-
+import 'dart:math' as math;
 import 'package:gutendex_viewer/services/book_api_service2.dart';
 import 'package:gutendex_viewer/services/local_database_service.dart';
-
-import '../models/book.dart';
 import '../models/book_info.dart';
+import '../models/book_details.dart';
 import '../models/book_filter.dart';
 
 class SyncService {
@@ -25,6 +23,8 @@ class SyncService {
 
   bool get hasPrev => _currentPage > 1;
 
+  int get currentPage => _currentPage;
+  int get maxPage => math.max((_allItems/ _maxItems).ceil(), 1);
   BookFilter? curFilter;
 
   void updateFilter(BookFilter filter) {
@@ -44,7 +44,7 @@ class SyncService {
       );
 
 
-      await LocalDatabaseService.saveBookInfos(booksData);
+      await LocalDatabaseService.saveBookInfos(booksData, false);
 
     } catch (e) {
 
@@ -57,11 +57,36 @@ class SyncService {
     }
   }
 
+  BookInfo? getBookInfo(String key)  {
+    return LocalDatabaseService.getBookInfo(key);
+  }
+
+  Future<void> toggleMarkBook(String key) async{
+    await LocalDatabaseService.toggleMarkBook(key);
+  }
+
+  Future<BookDetails> fetchBookDetails(String slug) async {
+
+
+    var result = LocalDatabaseService.getBookDetails(slug);
+    if( result != null) return result;
+
+
+    log("ładowanie detali z api", name: "sync");
+    BookDetails apiResult = await _apiService.fetchBookDetails(slug);
+    LocalDatabaseService.saveBookDetails(slug, apiResult);
+    return apiResult;
+
+
+  }
+
+
   List<BookInfo> getFiltered(List<BookInfo> allInfos) {
-    final query = curFilter!.search;
+    final query = curFilter!.search.toLowerCase();
     final selectedEpoch = curFilter!.epoch;
     final selectedGenre = curFilter!.genre;
     final selectedKind = curFilter!.kind;
+    final selectedOnlyMarked = curFilter!.showOnlyMarked;
 
     final filtered = allInfos.where((book) {
       final matchesSearch =
@@ -72,8 +97,9 @@ class SyncService {
       final matchesEpoch = selectedEpoch == null || book.epoch == selectedEpoch;
       final matchesGenre = selectedGenre == null || book.genre == selectedGenre;
       final matchesKind = selectedKind == null || book.kind == selectedKind;
+      final matchesMarked = selectedOnlyMarked  == false || book.isMarked == true;
 
-      return matchesSearch && matchesEpoch && matchesGenre && matchesKind;
+      return matchesSearch && matchesEpoch && matchesGenre && matchesKind && matchesMarked;
     }).toList();
 
     return filtered;
@@ -86,7 +112,7 @@ class SyncService {
     List<BookInfo> filtered = getFiltered(allInfos);
 
     _allItems = filtered.length;
-    //log("len: ${filtered.length}", name: "sync");
+
     int p = page ?? _currentPage;
     p += offset;
     _currentPage = p;
@@ -94,13 +120,8 @@ class SyncService {
     int idxStart = (p - 1) * _maxItems;
     int idxEnd = idxStart + _maxItems;
 
-    idxEnd = min(idxEnd, _allItems);
+    idxEnd = math.min(idxEnd, _allItems);
 
-    // var res = LocalDatabaseService.getCachedPage(key);
-    // if (res != null) return res;
-
-    //var apiRes = await _apiService.fetchPage();
-    //LocalDatabaseService.savePageMapping(key, apiRes);
 
     return filtered.sublist(idxStart, idxEnd);
   }

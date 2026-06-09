@@ -1,116 +1,91 @@
 
+import 'package:gutendex_viewer/models/book_details.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
-
-import '../models/book.dart';
 import '../models/book_info.dart';
 
 class LocalDatabaseService {
 
 
-
   static const String _bookInfos = 'infos';
-  //static const String _pagesBoxName = 'cached_pages';
+  static const String _bookDetails = 'details';
+
+
   static const String _markedBoxName = 'marked_books';
 
 
-  static const String _favKey = 'favorites_list';
-
-  static bool get isEmpty => Hive.box<Map>(_bookInfos).isEmpty;
+  static bool get isEmpty =>
+      Hive
+          .box<Map>(_bookInfos)
+          .isEmpty;
 
   static Future<void> init() async {
     await Hive.initFlutter();
-    await Hive.openBox<Map>(_bookInfos);       // Przechowuje surowe mapy książek: int -> Map
-    //await Hive.openBox<List>(_pagesBoxName);      // Przechowuje listy ID dla stron: String -> List<int>
-    await Hive.openBox<List>(_markedBoxName);     // Przechowuje listę ulubionych: String -> List<int>
+    await Hive.openBox<Map>(_bookInfos);
+    await Hive.openBox<List>(_markedBoxName);
+    await Hive.openBox<Map>(_bookDetails);
   }
 
+  static Future<void> saveBookDetails(String key, BookDetails details) async {
+    final box = Hive.box<Map>(_bookDetails);
 
-  static Future<void> saveBookInfos(List<BookInfo> infos) async {
+    await box.put(key, details.toMap());
+  }
 
+  static BookDetails? getBookDetails(String key) {
+    final box = Hive.box<Map>(_bookDetails);
+
+    final raw = box.get(key);
+
+    if (raw == null) return null;
+
+    return BookDetails.fromMap(
+      Map<String, dynamic>.from(raw),
+    );
+  }
+
+  static Future<void> clear() async {
+    await Hive.box<Map>(_bookInfos).clear();
+    await Hive.box<Map>(_bookDetails).clear();
+  }
+
+  static Future<void> saveBookInfos(List<BookInfo> infos, bool force) async {
     final box = Hive.box<Map>(_bookInfos);
-    await box.clear();
+    if(force)
+      await box.clear();
 
     for (var info in infos) {
-
-      await box.put(info.slug, info.toMap());
+      if(!box.containsKey(info.slug))
+        await box.put(info.slug, info.toMap());
     }
   }
 
-  static List<BookInfo> getBookInfos()  {
+  static List<BookInfo> getBookInfos() {
     final box = Hive.box<Map>(_bookInfos);
     return box.values.map((item) {
-
       return BookInfo.fromMap(Map<String, dynamic>.from(item));
     }).toList();
   }
 
-
-
-
-  static List<Book> getBooksByIds(List<int> ids) {
+  static BookInfo? getBookInfo(String key) {
     final box = Hive.box<Map>(_bookInfos);
-    final List<Book> books = [];
 
-    for (var id in ids) {
-      final cachedMap = box.get(id);
-      if (cachedMap != null) {
+    final raw = box.get(key);
 
-        final Map<String, dynamic> strictMap = Map<String, dynamic>.from(cachedMap);
-        books.add(Book.fromMap(strictMap));
-      }
-    }
-    return books;
+    if (raw == null) return null;
+
+    return BookInfo.fromMap(
+      Map<String, dynamic>.from(raw),
+    );
   }
 
 
-  // static Future<void> savePageMapping(String key,  List<Book> booksOnPage) async {
-  //   final box = Hive.box<List>(_pagesBoxName);
-  //
-  //
-  //
-  //   final List<int> bookIds = booksOnPage.map((b) => b.id).toList();
-  //
-  //   await box.put(key, bookIds);
-  //
-  //   await saveBooks(booksOnPage);
-  // }
+  static Future<void> toggleMarkBook(String key) async {
+    final box = Hive.box<Map>(_bookInfos);
 
+    final BookInfo info = BookInfo.fromMap(
+        Map<String, dynamic>.from(box.get(key)!));
 
-  // static List<Book>? getCachedPage(String uriKey) {
-  //   final box = Hive.box<List>(_pagesBoxName);
-  //   final String key = uriKey.toLowerCase();
-  //
-  //   final List? bookIds = box.get(key);
-  //   if (bookIds == null) return null;
-  //
-  //
-  //   return getBooksByIds(List<int>.from(bookIds));
-  // }
-
-
-
-  static List<int> getMarkedBookIds() {
-    final box = Hive.box<List>(_markedBoxName);
-    final List? list = box.get(_favKey);
-    return list != null ? List<int>.from(list) : [];
+    await box.put(key, info.copyWith(isMarked: !info.isMarked).toMap());
   }
 
-
-  static Future<void> toggleMarkBook(int bookId) async {
-    final box = Hive.box<List>(_markedBoxName);
-    final List<int> currentMarked = getMarkedBookIds();
-
-    if (currentMarked.contains(bookId)) {
-      currentMarked.remove(bookId);
-    } else {
-      currentMarked.add(bookId);
-    }
-
-    await box.put(_favKey, currentMarked);
-  }
-
-
-  static bool isBookMarked(int bookId) {
-    return getMarkedBookIds().contains(bookId);
-  }
 }

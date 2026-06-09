@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/book_filter.dart';
 
-
 class BookFilterScreen extends StatefulWidget {
   const BookFilterScreen({super.key});
 
@@ -12,7 +11,6 @@ class BookFilterScreen extends StatefulWidget {
 class _BookFilterScreenState extends State<BookFilterScreen> {
   final TextEditingController searchController = TextEditingController();
 
-
   final List<DropdownMenuItem<String?>> genreItems = const [
     DropdownMenuItem(value: null, child: Text("Dowolny gatunek")),
     DropdownMenuItem(value: "Powieść", child: Text("Powieść")),
@@ -22,7 +20,6 @@ class _BookFilterScreenState extends State<BookFilterScreen> {
     DropdownMenuItem(value: "Dramat", child: Text("Dramat")),
   ];
 
-
   final List<DropdownMenuItem<String?>> epochItems = const [
     DropdownMenuItem(value: null, child: Text("Dowolna epoka")),
     DropdownMenuItem(value: "Średniowiecze", child: Text("Średniowiecze")),
@@ -31,7 +28,6 @@ class _BookFilterScreenState extends State<BookFilterScreen> {
     DropdownMenuItem(value: "Pozytywizm", child: Text("Pozytywizm")),
     DropdownMenuItem(value: "Modernizm", child: Text("Modernizm (Młoda Polska)")),
   ];
-
 
   final List<DropdownMenuItem<String?>> kindItems = const [
     DropdownMenuItem(value: null, child: Text("Dowolny rodzaj")),
@@ -43,6 +39,9 @@ class _BookFilterScreenState extends State<BookFilterScreen> {
   String? _selectedGenre;
   String? _selectedEpoch;
   String? _selectedKind;
+
+
+  bool _showOnlyMarked = false;
 
   @override
   void dispose() {
@@ -60,7 +59,6 @@ class _BookFilterScreenState extends State<BookFilterScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-
             TextField(
               controller: searchController,
               decoration: const InputDecoration(
@@ -70,7 +68,6 @@ class _BookFilterScreenState extends State<BookFilterScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
 
             DropdownButtonFormField<String?>(
               value: _selectedEpoch,
@@ -87,7 +84,6 @@ class _BookFilterScreenState extends State<BookFilterScreen> {
             ),
             const SizedBox(height: 16),
 
-
             DropdownButtonFormField<String?>(
               value: _selectedGenre,
               items: genreItems,
@@ -103,7 +99,6 @@ class _BookFilterScreenState extends State<BookFilterScreen> {
             ),
             const SizedBox(height: 16),
 
-
             DropdownButtonFormField<String?>(
               value: _selectedKind,
               items: kindItems,
@@ -117,8 +112,26 @@ class _BookFilterScreenState extends State<BookFilterScreen> {
                 });
               },
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
 
+
+            CheckboxListTile(
+              title: const Text(
+                "Tylko książki z zakładką",
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+              subtitle: const Text("Ukryj pozycje, które nie są zapisane"),
+              value: _showOnlyMarked,
+              activeColor: Colors.purple,
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              onChanged: (bool? value) {
+                setState(() {
+                  _showOnlyMarked = value ?? false;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
 
             SizedBox(
               width: double.infinity,
@@ -130,11 +143,13 @@ class _BookFilterScreenState extends State<BookFilterScreen> {
                   ),
                 ),
                 onPressed: () {
+
                   final filter = BookFilter(
                     search: searchController.text,
                     epoch: _selectedEpoch,
                     genre: _selectedGenre,
                     kind: _selectedKind,
+                    showOnlyMarked: _showOnlyMarked,
                   );
 
                   Navigator.pop(context, filter);

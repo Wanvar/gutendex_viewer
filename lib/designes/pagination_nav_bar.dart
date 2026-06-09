@@ -6,6 +6,8 @@ class PaginationNavBar extends StatelessWidget {
   final bool isLoading;
   final VoidCallback? onPreviousPressed;
   final VoidCallback? onNextPressed;
+  final String currentPage;
+  final String maxPages;
 
   const PaginationNavBar({
     super.key,
@@ -14,6 +16,8 @@ class PaginationNavBar extends StatelessWidget {
     required this.isLoading,
     required this.onPreviousPressed,
     required this.onNextPressed,
+    required this.currentPage,
+    required this.maxPages
   });
 
   @override
@@ -56,11 +60,11 @@ class PaginationNavBar extends StatelessWidget {
                 ),
               )
                   : Text(
-                "Maksymalnie 32 pozycje",
+                "Strona $currentPage z $maxPages",
                 style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
+                  color: Colors.grey[700],
                 ),
               ),
             ),

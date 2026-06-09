@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
 import '../models/book_info.dart';
 import '../models/book_details.dart';
-import '../designes/book_filter.dart';
+
 
 
 
@@ -41,7 +42,7 @@ class BookApiService2 {
       if (response.statusCode == 200) {
 
         final Map<String, dynamic> jsonMap = jsonDecode(utf8.decode(response.bodyBytes));
-
+        log("$jsonMap", name: "api");
 
         return BookDetails.fromMap(jsonMap);
       } else {
